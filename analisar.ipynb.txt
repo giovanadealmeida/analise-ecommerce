@@ -1,0 +1,65 @@
+# Importando bibliotecas
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Configurações gerais
+sns.set(style="whitegrid")
+plt.rcParams['figure.figsize'] = (12,8)
+
+# Lê o arquivo CSV
+df = pd.read_csv('/data/ecommerce_estatistica.csv')
+df = df.dropna()
+
+# Cria uma figura com múltiplos subplots (3x3)
+fig, axes = plt.subplots(3, 3, figsize=(20, 18))
+fig.suptitle('Análise Estatística e Visualizações de E-commerce', fontsize=22)
+
+# 1️⃣ Histograma - Desconto
+axes[0,0].hist(df['Desconto'], bins=20, color='skyblue', edgecolor='black')
+axes[0,0].set_title('Distribuição dos Descontos')
+axes[0,0].set_xlabel('Desconto')
+axes[0,0].set_ylabel('Frequência')
+
+# 2️⃣ Gráfico de dispersão - Qtd_Vendidos_Cod x N_Avaliacoes_MinMax
+axes[0,1].scatter(df['N_Avaliacoes_MinMax'], df['Qtd_Vendidos_Cod'], alpha=0.6, color='green')
+axes[0,1].set_title('Vendas x Número de Avaliações')
+axes[0,1].set_xlabel('Número de Avaliações')
+axes[0,1].set_ylabel('Quantidade Vendida')
+
+# 3️⃣ Mapa de calor das correlações
+sns.heatmap(df.corr(), annot=True, cmap='coolwarm', fmt=".2f", ax=axes[0,2])
+axes[0,2].set_title('Mapa de Calor das Correlações')
+
+# 4️⃣ Gráfico de barra - Vendas médias por Marca
+vendas_marca = df.groupby('Marca_Freq')['Qtd_Vendidos_Cod'].mean().sort_values(ascending=False)
+vendas_marca.plot(kind='bar', color='orange', ax=axes[1,0])
+axes[1,0].set_title('Vendas Médias por Marca')
+axes[1,0].set_xlabel('Marca')
+axes[1,0].set_ylabel('Quantidade Média Vendida')
+
+# 5️⃣ Gráfico de pizza - Proporção por Temporada
+temporada_counts = df['Temporada_Cod'].value_counts()
+axes[1,1].pie(temporada_counts, labels=temporada_counts.index, autopct='%1.1f%%', startangle=90)
+axes[1,1].set_title('Proporção de Produtos por Temporada')
+
+# 6️⃣ Gráfico de densidade - Desconto
+sns.kdeplot(df['Desconto'], shade=True, color='purple', ax=axes[1,2])
+axes[1,2].set_title('Densidade do Desconto')
+axes[1,2].set_xlabel('Desconto')
+axes[1,2].set_ylabel('Densidade')
+
+# 7️⃣ Gráfico de Regressão - Qtd_Vendidos_Cod x N_Avaliacoes_MinMax
+sns.regplot(x='N_Avaliacoes_MinMax', y='Qtd_Vendidos_Cod', data=df,
+            scatter_kws={'alpha':0.5}, line_kws={'color':'red'}, ax=axes[2,0])
+axes[2,0].set_title('Regressão Linear: Vendas x Número de Avaliações')
+axes[2,0].set_xlabel('Número de Avaliações')
+axes[2,0].set_ylabel('Quantidade Vendida')
+
+# Remove subplots vazios
+fig.delaxes(axes[2,1])
+fig.delaxes(axes[2,2])
+
+# Ajusta layout
+plt.tight_layout(rect=[0, 0.03, 1, 0.95])
+plt.show()
